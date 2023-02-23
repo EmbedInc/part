@@ -72,14 +72,9 @@ procedure part_list_del (              {delete parts list, deallocate resources}
   in out  list_p: part_list_p_t);      {pointer to list to delete, returned NIL}
   val_param; extern;
 
-procedure part_list_new (              {create new parts list}
-  out     list_p: part_list_p_t;       {returned pointer to the new list}
-  in out  mem: util_mem_context_t);    {parent memory context, will create subordinate}
-  val_param; extern;
-
 procedure part_list_ent_add_end (      {add part to end of parts list}
   in out  list: part_list_t;           {the list to add the part to}
-  in      part_p: part_p_t);           {to the part to add}
+  in      part_p: part_p_t);           {pointer to the part to add}
   val_param; extern;
 
 procedure part_list_ent_new (          {create and initialize new parts list entry}
@@ -92,27 +87,37 @@ procedure part_list_ent_new_end (      {create and init new part, add to end of 
   out     part_p: part_p_t);           {returned pointer to the new part}
   val_param; extern;
 
-procedure part_reflist_del (           {deallocate resources of reference parts list}
-  in out  list: part_reflist_t);       {list to deallocate resources of, will be invalid}
-  val_param; extern;
-
-procedure part_reflist_init (          {initialize list of reference part definitions}
-  out     list: part_reflist_t;        {the list to initialize}
+procedure part_list_new (              {create new empty list of parts}
+  out     list_p: part_list_p_t;       {returned pointer to the new list}
   in out  mem: util_mem_context_t);    {parent memory context, will create subordinate}
   val_param; extern;
 
-procedure part_reflist_add_end (       {add part to end of reference parts list}
-  in out  list: part_reflist_t;        {the list to add the part to}
-  in      part_p: part_ref_p_t);       {poiner to the part to add}
+procedure part_reflist_del (           {delete reference parts list, deallocate resources}
+  in out  list_p: part_reflist_p_t);   {pointer to list to delete, returned NIL}
   val_param; extern;
 
-procedure part_reflist_new (           {create and initialize new partref list entry}
-  in      list: part_reflist_t;        {the list the entry will be part of}
+procedure part_reflist_ent_add_end (   {add part to end of reference parts list}
+  in out  list: part_reflist_t;        {the list to add the part to}
+  in      part_p: part_ref_p_t);       {pointer to the part to add}
+  val_param; extern;
+
+procedure part_reflist_ent_new (       {create and init new reference parts list entry}
+  in out  list: part_reflist_t;        {the list the entry will be part of}
   out     part_p: part_ref_p_t);       {returned pointer to the new entry, not linked}
+  val_param; extern;
+
+procedure part_reflist_ent_new_end (   {add new initialized entry to end of ref parts list}
+  in out  list: part_reflist_t;        {the list the entry will be part of}
+  out     part_p: part_ref_p_t);       {returned pointer to the new entry, not linked}
+  val_param; extern;
+
+procedure part_reflist_new (           {create new empty list of reference parts}
+  out     list_p: part_reflist_p_t;    {returned pointer to the new list}
+  in out  mem: util_mem_context_t);    {parent memory context, will create subordinate}
   val_param; extern;
 
 procedure part_reflist_read_csv (      {add parts from CSV file to partref list}
   in out  list: part_reflist_t;        {the list to add parts to}
   in      csvname: univ string_var_arg_t; {CSV file name, ".csv" suffix may be omitted}
-  out     stat: sys_err_t);
+  out     stat: sys_err_t);            {completion status}
   val_param; extern;

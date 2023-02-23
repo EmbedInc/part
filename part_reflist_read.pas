@@ -25,12 +25,12 @@ define part_reflist_read_csv;
 *   in column 1.
 *
 *   The list must have been previously initialized, and may contain existing
-*   entries.  New entries will be added to the list.
+*   entries.  New entries will be added to the end of the list.
 }
 procedure part_reflist_read_csv (      {add parts from CSV file to partref list}
   in out  list: part_reflist_t;        {the list to add parts to}
   in      csvname: univ string_var_arg_t; {CSV file name, ".csv" suffix may be omitted}
-  out     stat: sys_err_t);
+  out     stat: sys_err_t);            {completion status}
   val_param;
 
 const
@@ -45,10 +45,8 @@ type
 
 var
   ii: sys_int_machine_t;               {scratch integer and loop counter}
-  conn: file_conn_t;                   {connection to the CSV file}
-  buf: string_var8192_t;               {one line input buffer}
-  p: string_index_t;                   {BUF parse index}
-  tk, tk2: string_var132_t;            {sratch tokens}
+  cin: csv_in_t;                       {CSV file reading state}
+  tk, tk2: string_var132_t;            {scratch tokens}
   ptk: string_index_t;                 {TK parse index}
   pick: sys_int_machine_t;             {number of token picked from list}
   fieldn: sys_int_machine_t;           {current 1-N number of field being read}
@@ -75,23 +73,11 @@ var
   part_p: part_ref_p_t;                {pointer to partref list entry from curr line}
   namval_p: nameval_ent_p_t;           {pointer to current name/value list entry}
 
-(*
-desc
-val
-pack
-subs
-manu
-manun
-supp
-suppn
-*)
-
 label
-  err_atline, done;
+  next_hfield, err_atline, done;
 
 begin
-  buf.max := size_char(buf.str);       {init local var strings}
-  tk.max := size_char(tk.str);
+  tk.max := size_char(tk.str);         {init local var strings}
   tk2.max := size_char(tk2.str);
   val_desc.max := size_char(val_desc.str);
   val_val.max := size_char(val_val.str);
@@ -101,7 +87,7 @@ begin
   val_supp.max := size_char(val_supp.str);
   val_suppn.max := size_char(val_suppn.str);
 
-  file_open_read_text (csvname, '.csv', conn, stat); {open the CSV file}
+  csv_in_open (csvname, cin, stat);    {open the CSV file for reading}
   if sys_error(stat) then return;
 {
 *   Read the header line to find out which fields are what.  The FIELD_xxx
@@ -109,10 +95,9 @@ begin
 *   corresponding value.  A value of 0 indicates that field is not included in
 *   this CSV file.
 }
-  file_read_text (conn, buf, stat);    {read the header line}
+  csv_in_line (cin, stat);             {read the header line into internal buffer}
   if file_eof(stat) then goto done;    {end of file ?}
   if sys_error(stat) then goto done;
-  p := 1;                              {init input line parse index}
 
   field_desc := 0;                     {init all fields to not found}
   field_val := 0;
@@ -133,7 +118,7 @@ begin
 
   fieldn := 0;                         {init to before first field}
   while true do begin                  {once for each header line field}
-    string_token_comma (buf, p, tk, stat); {get this field into TK}
+    csv_in_field_str (cin, tk, stat);  {get this field name into TK}
     if string_eos(stat) then exit;     {hit end of header line ?}
     if sys_error(stat) then goto err_atline;
     string_unpad (tk);                 {remove trailing blanks}
@@ -150,14 +135,14 @@ begin
 6:    field_manun := fieldn;
 7:    field_supp := fieldn;
 8:    field_suppn := fieldn;
-otherwise
+otherwise                              {not a fixed name, expect "Inhouse xxx"}
       ptk := 1;                        {init TK parse index}
       string_token (tk, ptk, tk2, stat); {get first token of field name string}
-      if sys_error(stat) then next;
-      if not string_equal (tk2, string_v('Inhouse'(0))) then next;
+      if sys_error(stat) then goto next_hfield;
+      if not string_equal (tk2, string_v('Inhouse'(0))) then goto next_hfield;
       string_token (tk, ptk, tk2, stat); {get organization name into TK2}
-      if sys_error(stat) then next;
-      if ptk <= tk.len then next;      {more tokens left in field name ?}
+      if sys_error(stat) then goto next_hfield;
+      if ptk <= tk.len then goto next_hfield; {more tokens left in field name ?}
       {
       *   TK2 contains the name of a new organization with private numbers.
       }
@@ -171,18 +156,15 @@ otherwise
       string_copy (tk2, org[norg].name); {save organization name}
       org[norg].field := fieldn;       {save field number for this org}
       end;                             {end of which field cases}
+next_hfield:                           {done with this header field, on to next}
     end;                               {back to do next header line field}
 {
 *   Read the remaining lines and add their info to the partref list.
 }
   while true do begin                  {back to read each new line}
-    file_read_text (conn, buf, stat);  {read new CSV file line into BUF}
+    csv_in_line (cin, stat);           {read new CSV file line into buffer}
     if file_eof(stat) then exit;       {end of file ?}
     if sys_error(stat) then goto done; {hard error ?}
-    string_unpad (buf);                {strip trailing blanks}
-    if buf.len <= 0 then next;         {empty line, ignore it ?}
-    if buf.str[1] = '*' then next;     {comment line, ignore it ?}
-    p := 1;                            {init BUF parse index}
 
     val_desc.len := 0;                 {init all values to empty}
     val_val.len := 0;
@@ -201,7 +183,7 @@ otherwise
     fieldn := 0;                       {init to before first field}
     while true do begin                {once for each field on this line}
       fieldn := fieldn + 1;            {make 1-N number of this field}
-      string_token_comma (buf, p, tk, stat); {get this field string into TK}
+      csv_in_field_str (cin, tk, stat); {get this field string into TK}
       if string_eos(stat) then exit;   {done all fields on this line ?}
       if sys_error(stat) then goto done; {hard error ?}
       string_unpad (tk);               {remove trailing blanks}
@@ -263,7 +245,7 @@ otherwise
     }
     if nvals < 2 then next;            {must have 2 values for line to be useful}
 
-    part_reflist_new (list, part_p);   {make new reference part descriptor}
+    part_reflist_ent_new_end (list, part_p); {create new empty list entry}
 
     string_copy (val_desc, part_p^.desc); {write simple fields into part descriptor}
     string_copy (val_val, part_p^.value);
@@ -293,20 +275,14 @@ otherwise
       nameval_set_value (part_p^.inhouse, namval_p^, org[ii].numb);
       nameval_ent_add_end (part_p^.inhouse, namval_p);
       end;
-
-    part_reflist_add_end (list, part_p); {add the new part to the end of the list}
     end;                               {back to read next line from CSV file}
   goto done;                           {close the CSV file and leave}
 
 err_atline:                            {error at current input file line}
-(*
-  writeln ('BUF = "', buf.str:buf.len, '"');
-  writeln ('TK = "', tk.str:tk.len, '"');
-*)
   sys_stat_set (string_subsys_k, string_stat_err_on_line_k, stat);
-  sys_stat_parm_int (conn.lnum, stat);
-  sys_stat_parm_vstr (conn.tnam, stat);
+  sys_stat_parm_int (cin.conn.lnum, stat);
+  sys_stat_parm_vstr (cin.conn.tnam, stat);
 
 done:                                  {done reading input file}
-  file_close (conn);
+  csv_in_close (cin, stat);            {close the CSV input file}
   end;

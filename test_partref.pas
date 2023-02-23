@@ -13,7 +13,7 @@ program test_partref;
 var
   fnam:                                {input file name}
     %include '(cog)lib/string_treename.ins.pas';
-  parts: part_reflist_t;               {the list of reference parts}
+  list_p: part_reflist_p_t;            {points to list of reference parts}
   part_p: part_ref_p_t;                {points to current part definition}
   namval_p: nameval_ent_p_t;           {points to current name/value list entry}
   partn: sys_int_machine_t;            {1-N number of current part}
@@ -28,14 +28,14 @@ begin
   sys_error_abort (stat, '', '', nil, 0);
   string_cmline_end_abort;             {no other command line parameters allowed}
 
-  part_reflist_init (parts, util_top_mem_context); {init the parts list}
-  part_reflist_read_csv (parts, fnam, stat); {read CSV file data into the list}
+  part_reflist_new (list_p, util_top_mem_context); {create empty ref parts list}
+  part_reflist_read_csv (list_p^, fnam, stat); {read CSV file data into the list}
   sys_error_abort (stat, '', '', nil, 0);
 
-  writeln (parts.nparts, ' found');
+  writeln (list_p^.nparts, ' found');
 
   partn := 0;
-  part_p := parts.first_p;             {init to first part in list}
+  part_p := list_p^.first_p;           {init to first part in list}
   while part_p <> nil do begin         {once for each part in the list}
     partn := partn + 1;                {make 1-N number of this part}
     if partn > 1 then writeln;
