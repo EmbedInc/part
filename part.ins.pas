@@ -28,9 +28,70 @@ type
     last_p: part_ref_p_t;              {points to last list entry}
     nparts: sys_int_machine_t;         {number of entries in the list}
     end;
+
+  part_flag_k_t = (                    {flags for individial parts}
+    part_flag_comm_k,                  {common part, not first in common part chain}
+    part_flag_nobom_k,                 {do not add this part to the BOM}
+    part_flag_subst_k,                 {OK to substitute part with equivalent}
+    part_flag_isafe_k);                {critical to Intrinsic Safety}
+  part_flags_t = set of part_flag_k_t;
+
+  part_p_t = ^part_t;
+  part_t = record                      {info about one part from input file}
+    next_p: part_p_t;                  {pointer to next input file part}
+    line: sys_int_machine_t;           {input file source line number}
+    qtyuse: real;                      {quantity per individual usage, usually 1}
+    desig: string_var16_t;             {component designator, upper case}
+    lib: string_var80_t;               {Eagle library name, upper case}
+    dev: string_var80_t;               {device name within Eagle lib, original case}
+    devu: string_var80_t;              {device name within Eagle lib, upper case}
+    desc: string_var132_t;             {part description string}
+    val: string_var80_t;               {value for BOM, from VALUE or DVAL if present}
+    pack: string_var32_t;              {package name within Eagle lib, upper case}
+    manuf: string_var132_t;            {manufacturer name}
+    mpart: string_var132_t;            {manufacturer part number}
+    supp: string_var132_t;             {supplier name}
+    spart: string_var132_t;            {supplier part number}
+    housenum: string_var132_t;         {in-house part number}
+    flags: part_flags_t;               {set of flags for this part}
+    same_p: part_p_t;                  {pnt to next same part}
+    qty: real;                         {total same parts of this type, valid at first}
+    end;
+
+  part_list_p_t = ^part_list_t;
+  part_list_t = record                 {list of parts, like in a BOM}
+    mem_p: util_mem_context_p_t;       {points to dynamic memory context for list}
+    first_p: part_p_t;                 {points to first list entry}
+    last_p: part_p_t;                  {points to last list entry}
+    nparts: sys_int_machine_t;         {number of entries in the list}
+    end;
 {
 *   Subroutines and functions.
 }
+procedure part_list_del (              {delete parts list, deallocate resources}
+  in out  list_p: part_list_p_t);      {pointer to list to delete, returned NIL}
+  val_param; extern;
+
+procedure part_list_new (              {create new parts list}
+  out     list_p: part_list_p_t;       {returned pointer to the new list}
+  in out  mem: util_mem_context_t);    {parent memory context, will create subordinate}
+  val_param; extern;
+
+procedure part_list_ent_add_end (      {add part to end of parts list}
+  in out  list: part_list_t;           {the list to add the part to}
+  in      part_p: part_p_t);           {to the part to add}
+  val_param; extern;
+
+procedure part_list_ent_new (          {create and initialize new parts list entry}
+  in out  list: part_list_t;           {the list the entry will be part of}
+  out     part_p: part_p_t);           {returned pointer to the new entry, not linked}
+  val_param; extern;
+
+procedure part_list_ent_new_end (      {create and init new part, add to end of list}
+  in out  list: part_list_t;           {the list the part will be added to}
+  out     part_p: part_p_t);           {returned pointer to the new part}
+  val_param; extern;
+
 procedure part_reflist_del (           {deallocate resources of reference parts list}
   in out  list: part_reflist_t);       {list to deallocate resources of, will be invalid}
   val_param; extern;
