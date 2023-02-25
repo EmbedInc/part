@@ -7,6 +7,8 @@ const
   part_stat_partref_orgovfl_k = 1;     {too many organizations with private part nums}
 
 type
+  part_list_p_t = ^part_list_t;
+
   part_ref_p_t = ^part_ref_t;
   part_ref_t = record                  {one reference part in list of ref parts}
     prev_p: part_ref_p_t;              {points to previous list entry}
@@ -38,6 +40,7 @@ type
 
   part_p_t = ^part_t;
   part_t = record                      {info about one part from input file}
+    list_p: part_list_p_t;             {to list this part is within}
     next_p: part_p_t;                  {pointer to next input file part}
     line: sys_int_machine_t;           {input file source line number}
     qtyuse: real;                      {quantity per individual usage, usually 1}
@@ -58,16 +61,22 @@ type
     qty: real;                         {total same parts of this type, valid at first}
     end;
 
-  part_list_p_t = ^part_list_t;
   part_list_t = record                 {list of parts, like in a BOM}
     mem_p: util_mem_context_p_t;       {points to dynamic memory context for list}
     first_p: part_p_t;                 {points to first list entry}
     last_p: part_p_t;                  {points to last list entry}
+    housename: string_var80_t;         {name of org owning in-house part numbers}
     nparts: sys_int_machine_t;         {number of entries in the list}
     end;
 {
 *   Subroutines and functions.
 }
+procedure part_housename_get (         {get name of org that owns private part numbers}
+  in      dir: univ string_var_arg_t;  {directory to find housename that applies to it}
+  in out  housename: univ string_var_arg_t; {returned organization name, empty if none}
+  out     stat: sys_err_t);            {completion status}
+  val_param; extern;
+
 procedure part_list_del (              {delete parts list, deallocate resources}
   in out  list_p: part_list_p_t);      {pointer to list to delete, returned NIL}
   val_param; extern;

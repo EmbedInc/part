@@ -40,6 +40,8 @@ begin
   list_p^.mem_p := mem_p;              {save pointer to private mem context}
   list_p^.first_p := nil;              {init the list to empty}
   list_p^.last_p := nil;
+  list_p^.housename.max := size_char(list_p^.housename.str);
+  list_p^.housename.len := 0;
   list_p^.nparts := 0;
   end;
 {
@@ -90,6 +92,7 @@ begin
     sys_error_abort (stat, '', '', nil, 0);
     end;
 
+  part_p^.list_p := addr(list);
   part_p^.next_p := nil;
   part_p^.line := 0;
   part_p^.qtyuse := 1.0;
