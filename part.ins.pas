@@ -101,6 +101,11 @@ procedure part_list_new (              {create new empty list of parts}
   in out  mem: util_mem_context_t);    {parent memory context, will create subordinate}
   val_param; extern;
 
+procedure part_ref_apply (             {apply reference parts into to parts list}
+  in out  list: part_list_t;           {parts to update to with reference info}
+  in      ref: part_reflist_t);        {list of refrence parts}
+  val_param; extern;
+
 procedure part_reflist_del (           {delete reference parts list, deallocate resources}
   in out  list_p: part_reflist_p_t);   {pointer to list to delete, returned NIL}
   val_param; extern;
