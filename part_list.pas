@@ -43,6 +43,7 @@ begin
   list_p^.housename.max := size_char(list_p^.housename.str);
   list_p^.housename.len := 0;
   list_p^.nparts := 0;
+  list_p^.nunique := 0;
   end;
 {
 ********************************************************************************

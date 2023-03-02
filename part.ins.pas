@@ -67,10 +67,15 @@ type
     last_p: part_p_t;                  {points to last list entry}
     housename: string_var80_t;         {name of org owning in-house part numbers}
     nparts: sys_int_machine_t;         {number of entries in the list}
+    nunique: sys_int_machine_t;        {number of unique physical parts in list}
     end;
 {
 *   Subroutines and functions.
 }
+procedure part_comm_find (             {find and mark common parts in list}
+  in out  list: part_list_t);          {list of part, SAME_P and COMM flags set}
+  val_param; extern;
+
 procedure part_def (                   {default empty fields from others as possible}
   in out  part: part_t);               {part to apply defaults to}
   val_param; extern;
