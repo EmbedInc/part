@@ -71,6 +71,14 @@ type
 {
 *   Subroutines and functions.
 }
+procedure part_def (                   {default empty fields from others as possible}
+  in out  part: part_t);               {part to apply defaults to}
+  val_param; extern;
+
+procedure part_def_list (              {default empty fields from others as possible}
+  in out  list: part_list_t);          {list of parts to apply defaults to}
+  val_param; extern;
+
 procedure part_housename_get (         {get name of org that owns private part numbers}
   in      dir: univ string_var_arg_t;  {directory to find housename that applies to it}
   in out  housename: univ string_var_arg_t; {returned organization name, empty if none}
