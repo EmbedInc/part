@@ -78,6 +78,12 @@ procedure part_bom_csv (               {write BOM CSV file, for reading by progr
   out     stat: sys_err_t);            {completion status}
   val_param; extern;
 
+procedure part_bom_template (          {copy BOM template spreadsheet into dir}
+  in      dir: univ string_var_arg_t;  {directory to copy template spreadsheet into}
+  in      gnam: univ string_var_arg_t; {generic board name}
+  out     stat: sys_err_t);            {completion status}
+  val_param; extern;
+
 procedure part_bom_tsv (               {write BOM for spreadsheet, with equations}
   in      list: part_list_t;           {list of parts to write BOM for}
   in      fnam: univ string_var_arg_t; {name of output file, ".tsv" may be omitted}
