@@ -72,6 +72,18 @@ type
 {
 *   Subroutines and functions.
 }
+procedure part_bom_csv (               {write BOM CSV file, for reading by programs}
+  in      list: part_list_t;           {list of parts to write BOM for}
+  in      fnam: univ string_var_arg_t; {name of output file, ".csv" may be omitted}
+  out     stat: sys_err_t);            {completion status}
+  val_param; extern;
+
+procedure part_bom_tsv (               {write BOM for spreadsheet, with equations}
+  in      list: part_list_t;           {list of parts to write BOM for}
+  in      fnam: univ string_var_arg_t; {name of output file, ".tsv" may be omitted}
+  out     stat: sys_err_t);            {completion status}
+  val_param; extern;
+
 procedure part_comm_find (             {find and mark common parts in list}
   in out  list: part_list_t);          {list of part, SAME_P and COMM flags set}
   val_param; extern;
