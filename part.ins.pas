@@ -137,6 +137,12 @@ procedure part_ref_apply (             {apply reference parts into to parts list
   in      ref: part_reflist_t);        {list of refrence parts}
   val_param; extern;
 
+procedure part_ref_write (             {write parts list in reference list CSV format}
+  in      list: part_list_t;           {list of parts to write}
+  in      fnam: univ string_var_arg_t; {name of output file, ".csv" may be omitted}
+  out     stat: sys_err_t);            {completion status}
+  val_param; extern;
+
 procedure part_reflist_del (           {delete reference parts list, deallocate resources}
   in out  list_p: part_reflist_p_t);   {pointer to list to delete, returned NIL}
   val_param; extern;

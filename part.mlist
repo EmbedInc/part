@@ -6,5 +6,6 @@ part_def.obj
 part_housename.obj
 part_list.obj
 part_ref_apply.obj
+part_ref_write.obj
 part_reflist.obj
 part_reflist_read.obj
