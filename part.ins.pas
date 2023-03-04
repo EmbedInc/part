@@ -65,9 +65,12 @@ type
     mem_p: util_mem_context_p_t;       {points to dynamic memory context for list}
     first_p: part_p_t;                 {points to first list entry}
     last_p: part_p_t;                  {points to last list entry}
+    board: string_var32_t;             {board name, if known}
     housename: string_var80_t;         {name of org owning in-house part numbers}
+    reflist_p: part_reflist_p_t;       {to list of reference parts, if any}
     nparts: sys_int_machine_t;         {number of entries in the list}
     nunique: sys_int_machine_t;        {number of unique physical parts in list}
+    tnam: string_treename_t;           {full treename of source file, if any}
     end;
 {
 *   Subroutines and functions.
@@ -134,7 +137,7 @@ procedure part_list_new (              {create new empty list of parts}
 
 procedure part_ref_apply (             {apply reference parts into to parts list}
   in out  list: part_list_t;           {parts to update to with reference info}
-  in      ref: part_reflist_t);        {list of refrence parts}
+  in var  ref: part_reflist_t);        {list of refrence parts}
   val_param; extern;
 
 procedure part_ref_write (             {write parts list in reference list CSV format}

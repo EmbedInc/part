@@ -40,10 +40,15 @@ begin
   list_p^.mem_p := mem_p;              {save pointer to private mem context}
   list_p^.first_p := nil;              {init the list to empty}
   list_p^.last_p := nil;
+  list_p^.board.max := size_char(list_p^.board.str);
+  list_p^.board.len := 0;
   list_p^.housename.max := size_char(list_p^.housename.str);
   list_p^.housename.len := 0;
+  list_p^.reflist_p := nil;
   list_p^.nparts := 0;
   list_p^.nunique := 0;
+  list_p^.tnam.max := size_char(list_p^.tnam.str);
+  list_p^.tnam.len := 0;
   end;
 {
 ********************************************************************************

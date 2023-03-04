@@ -7,11 +7,12 @@ define part_ref_apply;
 *   Subroutine PART_REF_APPLY (LIST, REF)
 *
 *   Apply the information in the reference parts list REF to the parts in the
-*   list LIST.
+*   list LIST.  LIST.REFLIST_P will be set pointing to the reference list unless
+*   a reference list was previously set.
 }
 procedure part_ref_apply (             {apply reference parts into to parts list}
   in out  list: part_list_t;           {parts to update to with reference info}
-  in      ref: part_reflist_t);        {list of refrence parts}
+  in var  ref: part_reflist_t);        {list of refrence parts}
   val_param;
 
 var
@@ -22,12 +23,15 @@ var
   tk: string_var80_t;                  {scratch token}
   absmatch: boolean;                   {absolute part match}
 
-
 label
   refmatch, doneref;
 
 begin
   tk.max := size_char(tk.str);         {init local var string}
+
+  if list.reflist_p = nil then begin   {no reference list previously set ?}
+    list.reflist_p := addr(ref);       {set REF as the reference list}
+    end;
 
   part_p := list.first_p;              {init to first part in list}
   while part_p <> nil do begin         {once for each part in the list}
