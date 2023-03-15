@@ -46,7 +46,7 @@ begin
 
   string_treename (dir, cdir);         {init to starting directory}
   while true do begin                  {up the hierarch of directories}
-    string_copy (dir, tnam);           {make name of HOUSENAME file in this dir}
+    string_copy (cdir, tnam);          {make name of HOUSENAME file in this dir}
     string_appends (tnam, '/housename'(0));
 
     file_open_read_text (tnam, '', conn, stat); {open connection to the file}
