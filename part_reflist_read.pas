@@ -87,7 +87,7 @@ begin
   val_supp.max := size_char(val_supp.str);
   val_suppn.max := size_char(val_suppn.str);
 
-  csv_in_open (csvname, cin, stat);    {open the CSV file for reading}
+  csv_in_open (csvname, list.mem_p^, cin, stat); {open the CSV file for reading}
   if sys_error(stat) then return;
 {
 *   Read the header line to find out which fields are what.  The FIELD_xxx
