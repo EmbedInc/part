@@ -61,7 +61,7 @@ type
     qty: real;                         {total same parts of this type, valid at first}
     end;
 
-  part_list_t = record                 {list of parts, like in a BOM}
+  part_list_t = record                 {list of parts}
     mem_p: util_mem_context_p_t;       {points to dynamic memory context for list}
     first_p: part_p_t;                 {points to first list entry}
     last_p: part_p_t;                  {points to last list entry}
@@ -72,6 +72,31 @@ type
     nunique: sys_int_machine_t;        {number of unique physical parts in list}
     tnam: string_treename_t;           {full treename of source file, if any}
     end;
+
+  part_bom_ent_p_t = ^part_bom_ent_t;
+  part_bom_ent_t = record              {one BOM entry}
+    next_p: part_bom_ent_p_t;          {to next BOM entry}
+    qty: string_var32_t;               {quantity, integer when possible}
+    desig_p: string_var_p_t;           {to list of designators}
+    desig_is_p: string_var_p_t;        {to desig list, "*" for critical to Intrinsic Safety}
+    desc_p: string_var_p_t;            {to part general description}
+    val_p: string_var_p_t;             {to specific part value string}
+    pack_p: string_var_p_t;            {to package name string}
+    subst: boolean;                    {substitution allowed}
+    inhouse_p: string_var_p_t;         {to in-house part number or designation}
+    manf_p: string_var_p_t;            {to manufacturer name}
+    manf_part_p: string_var_p_t;       {to manufacturer part number}
+    supp_p: string_var_p_t;            {to supplier name}
+    supp_part_p: string_var_p_t;       {to supplier part number}
+    end;
+
+  part_bom_p_t = ^part_bom_t;
+  part_bom_t = record                  {bill of materials}
+    mem_p: util_mem_context_p_t;       {to memory context for this BOM}
+    nent: sys_int_machine_t;           {number of entries in the BOM}
+    first_p: part_bom_ent_p_t;         {to first BOM entry}
+    last_p: part_bom_ent_p_t;          {to last BOM entry}
+    end;
 {
 *   Subroutines and functions.
 }
@@ -79,6 +104,40 @@ procedure part_bom_csv (               {write BOM CSV file, for reading by progr
   in      list: part_list_t;           {list of parts to write BOM for}
   in      fnam: univ string_var_arg_t; {name of output file, ".csv" may be omitted}
   out     stat: sys_err_t);            {completion status}
+  val_param; extern;
+
+procedure part_bom_del (               {delete BOM, deallocate resources}
+  in out  bom_p: part_bom_p_t);        {pointer to BOM, returned NIL}
+  val_param; extern;
+
+procedure part_bom_ent_end (           {create new BOM entry, link to end}
+  in out  bom: part_bom_t;             {BOM to add entry to}
+  out     ent_p: part_bom_ent_p_t);    {to new entry, will be last in BOM}
+  val_param; extern;
+
+procedure part_bom_ent_link_end (      {link entry to end of BOM}
+  in out  bom: part_bom_t;             {BOM to link entry to}
+  in      ent_p: part_bom_ent_p_t);    {to entry to link to BOM}
+  val_param; extern;
+
+procedure part_bom_ent_new (           {create new BOM entry, not added to BOM}
+  in out  bom: part_bom_t;             {BOM to create new entry in}
+  out     ent_p: part_bom_ent_p_t);    {returned pointing to new BOM entry}
+  val_param; extern;
+
+procedure part_bom_list_add (          {add BOM entries from parts list}
+  in out  bom: part_bom_t;             {BOM to add entries to}
+  in      list: part_list_t);          {list to create new BOM entries from}
+  val_param; extern;
+
+procedure part_bom_list_make (         {create BOM from parts list}
+  in      list: part_list_t;           {list of parts to create BOM from}
+  out     bom_p: part_bom_p_t);        {returned pointer to new BOM}
+  val_param; extern;
+
+procedure part_bom_new (               {create new BOM data structure}
+  out     bom_p: part_bom_p_t;         {returned pointer to the new BOM}
+  in out  mem: util_mem_context_t);    {parent memory context, will create subordinate}
   val_param; extern;
 
 procedure part_bom_template (          {copy BOM template spreadsheet into dir}
@@ -135,7 +194,7 @@ procedure part_list_new (              {create new empty list of parts}
   in out  mem: util_mem_context_t);    {parent memory context, will create subordinate}
   val_param; extern;
 
-procedure part_ref_apply (             {apply reference parts into to parts list}
+procedure part_ref_apply (             {apply reference parts to parts list}
   in out  list: part_list_t;           {parts to update to with reference info}
   in var  ref: part_reflist_t);        {list of refrence parts}
   val_param; extern;

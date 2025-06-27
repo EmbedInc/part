@@ -1,5 +1,7 @@
 part_bom.obj
 part_bom_csv.obj
+part_bom_list.obj
+part_bom_template.obj
 part_bom_tsv.obj
 part_comm.obj
 part_def.obj
