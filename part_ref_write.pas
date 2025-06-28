@@ -31,6 +31,8 @@ begin
 
   csv_out_open (fnam, cout, stat);     {open CSV output file}
   if sys_error(stat) then return;
+  cout.flags :=                        {write only min required characters}
+    cout.flags + [csv_outflag_minchar_k];
 
   part_p := list.first_p;              {init current component to first in list}
   while part_p <> nil do begin         {scan thru the entire list of components}
